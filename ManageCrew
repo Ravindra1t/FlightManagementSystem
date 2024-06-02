@@ -1,0 +1,139 @@
+package FlightManagementSystem;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ManageCrewPage extends JFrame implements ActionListener {
+    private Container container;
+    private JLabel titleLabel;
+    private JComboBox<String> batchComboBox;
+    private JComboBox<String> timeSlotComboBox;
+    private JButton assignButton;
+    private JButton backButton;
+    private JTextArea crewTextArea;
+    private Map<String, List<String>> crewBatches;
+
+    public ManageCrewPage() {
+        setTitle("Manage Crew");
+        setBounds(300, 90, 600, 500);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
+
+        container = getContentPane();
+        container.setLayout(null);
+
+        titleLabel = new JLabel("Manage Crew");
+        titleLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        titleLabel.setSize(200, 30);
+        titleLabel.setLocation(250, 30);
+        container.add(titleLabel);
+
+        batchComboBox = new JComboBox<>();
+        batchComboBox.setFont(new Font("Arial", Font.PLAIN, 15));
+        batchComboBox.setSize(150, 20);
+        batchComboBox.setLocation(50, 100);
+        container.add(batchComboBox);
+
+        timeSlotComboBox = new JComboBox<>();
+        timeSlotComboBox.setFont(new Font("Arial", Font.PLAIN, 15));
+        timeSlotComboBox.setSize(150, 20);
+        timeSlotComboBox.setLocation(250, 100);
+        container.add(timeSlotComboBox);
+
+        assignButton = new JButton("Assign Crew");
+        assignButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        assignButton.setSize(150, 20);
+        assignButton.setLocation(450, 100);
+        assignButton.addActionListener(this);
+        container.add(assignButton);
+
+        backButton = new JButton("Back");
+        backButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        backButton.setSize(100, 20);
+        backButton.setLocation(250, 150);
+        backButton.addActionListener(e -> {
+            dispose();
+            new AdminPage();
+        });
+        container.add(backButton);
+
+        crewTextArea = new JTextArea();
+        crewTextArea.setFont(new Font("Arial", Font.PLAIN, 15));
+        crewTextArea.setSize(500, 250);
+        crewTextArea.setLocation(50, 200);
+        crewTextArea.setEditable(false);
+        container.add(crewTextArea);
+
+        // Define crew batches and their time slots
+        crewBatches = new HashMap<>();
+        crewBatches.put("Batch 1", new ArrayList<>());
+        crewBatches.put("Batch 2", new ArrayList<>());
+        crewBatches.put("Batch 3", new ArrayList<>());
+        crewBatches.put("Batch 4", new ArrayList<>());
+        crewBatches.put("Batch 5", new ArrayList<>());
+        crewBatches.put("Batch 6", new ArrayList<>());
+
+        // Populate batch combo box
+        for (String batch : crewBatches.keySet()) {
+            batchComboBox.addItem(batch);
+        }
+
+        // Populate time slot combo box
+        String[] timeSlots = {"9:00 AM - 11:00 AM", "11:00 AM - 1:00 PM", "1:00 PM - 3:00 PM", "3:00 PM - 5:00 PM", "5:00 PM - 7:00 PM", "7:00 PM - 9:00 PM"};
+        for (String timeSlot : timeSlots) {
+            timeSlotComboBox.addItem(timeSlot);
+        }
+
+        displayAssignedCrew();
+
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == assignButton) {
+            String selectedBatch = (String) batchComboBox.getSelectedItem();
+            String selectedTimeSlot = (String) timeSlotComboBox.getSelectedItem();
+            if (selectedBatch != null && selectedTimeSlot != null) {
+                assignCrew(selectedBatch, selectedTimeSlot);
+                displayAssignedCrew();
+            }
+        }
+    }
+
+    private void assignCrew(String batch, String timeSlot) {
+        // Assign crew to the selected time slot for the given batch
+        crewBatches.get(batch).add(timeSlot);
+        // Update the file or database with the assigned crew information
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("assigned_crew.txt", true))) {
+            writer.write(batch + ": " + timeSlot);
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void displayAssignedCrew() {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("assigned_crew.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        crewTextArea.setText(sb.toString());
+    }
+
+    public static void main(String[] args) {
+        new ManageCrewPage();
+    }
+}
