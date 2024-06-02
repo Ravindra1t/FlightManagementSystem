@@ -1,0 +1,111 @@
+package FlightManagementSystem;
+
+
+
+
+
+import FlightManagementSystem.PaymentGateway;
+import  FlightManagementSystem.BookedTicketsPage;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class HomePage extends JFrame implements ActionListener {
+    private Container container;
+    private JLabel titleLabel;
+    private JLabel flightNumberLabel;
+    private JTextField flightNumberField;
+    private JButton bookButton;
+    private JButton viewBookedTicketsButton;
+    private JTextArea flightsTextArea;
+
+    public HomePage() {
+        setTitle("Home Page");
+        setBounds(300, 90, 600, 500);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
+
+        container = getContentPane();
+        container.setLayout(null);
+
+        titleLabel = new JLabel("Available Flights");
+        titleLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        titleLabel.setSize(200, 30);
+        titleLabel.setLocation(200, 30);
+        container.add(titleLabel);
+
+        flightNumberLabel = new JLabel("Flight Number");
+        flightNumberLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        flightNumberLabel.setSize(100, 20);
+        flightNumberLabel.setLocation(50, 100);
+        container.add(flightNumberLabel);
+
+        flightNumberField = new JTextField();
+        flightNumberField.setFont(new Font("Arial", Font.PLAIN, 15));
+        flightNumberField.setSize(150, 20);
+        flightNumberField.setLocation(200, 100);
+        container.add(flightNumberField);
+
+        bookButton = new JButton("Book Flight");
+        bookButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        bookButton.setSize(150, 20);
+        bookButton.setLocation(400, 100);
+        bookButton.addActionListener(this);
+        container.add(bookButton);
+
+        viewBookedTicketsButton = new JButton("View Booked Tickets");
+        viewBookedTicketsButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        viewBookedTicketsButton.setSize(200, 20);
+        viewBookedTicketsButton.setLocation(200, 150);
+        viewBookedTicketsButton.addActionListener(e -> {
+            dispose();
+            new BookedTicketsPage();
+        });
+        container.add(viewBookedTicketsButton);
+
+        flightsTextArea = new JTextArea();
+        flightsTextArea.setFont(new Font("Arial", Font.PLAIN, 15));
+        flightsTextArea.setSize(500, 200);
+        flightsTextArea.setLocation(50, 200);
+        flightsTextArea.setEditable(false);
+        container.add(flightsTextArea);
+
+        loadFlights();
+
+        setVisible(true);
+    }
+
+    private void loadFlights() {
+        StringBuilder flightsList = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("flights.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                flightsList.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            flightsList.append("No flights available.");
+            e.printStackTrace();
+        }
+        flightsTextArea.setText(flightsList.toString());
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String flightNumber = flightNumberField.getText();
+        if (flightNumber != null && !flightNumber.trim().isEmpty()) {
+            new PaymentGateway(flightNumber);
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Please enter a valid flight number", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static void main(String[] args) {
+        new HomePage();
+    }
+}
+
