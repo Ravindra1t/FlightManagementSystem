@@ -1,0 +1,125 @@
+package  FlightManagementSystem;
+
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class Register extends JFrame implements ActionListener {
+    private Container container;
+    private JLabel titleLabel;
+    private JLabel usernameLabel;
+    private JTextField usernameField;
+    private JLabel passwordLabel;
+    private JPasswordField passwordField;
+    private JLabel emailLabel;
+    private JTextField emailField;
+    private JButton registerButton;
+    private JButton loginButton;
+    private JLabel resultLabel;
+
+    public Register() {
+        setTitle("Register Form");
+        setBounds(300, 90, 400, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
+
+        container = getContentPane();
+        container.setLayout(null);
+
+        titleLabel = new JLabel("Register Form");
+        titleLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        titleLabel.setSize(200, 30);
+        titleLabel.setLocation(100, 30);
+        container.add(titleLabel);
+
+        usernameLabel = new JLabel("Username");
+        usernameLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        usernameLabel.setSize(100, 20);
+        usernameLabel.setLocation(50, 100);
+        container.add(usernameLabel);
+
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Arial", Font.PLAIN, 15));
+        usernameField.setSize(150, 20);
+        usernameField.setLocation(150, 100);
+        container.add(usernameField);
+
+        passwordLabel = new JLabel("Password");
+        passwordLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        passwordLabel.setSize(100, 20);
+        passwordLabel.setLocation(50, 150);
+        container.add(passwordLabel);
+
+        passwordField = new JPasswordField();
+        passwordField.setFont(new Font("Arial", Font.PLAIN, 15));
+        passwordField.setSize(150, 20);
+        passwordField.setLocation(150, 150);
+        container.add(passwordField);
+
+        emailLabel = new JLabel("Email");
+        emailLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        emailLabel.setSize(100, 20);
+        emailLabel.setLocation(50, 200);
+        container.add(emailLabel);
+
+        emailField = new JTextField();
+        emailField.setFont(new Font("Arial", Font.PLAIN, 15));
+        emailField.setSize(150, 20);
+        emailField.setLocation(150, 200);
+        container.add(emailField);
+
+        registerButton = new JButton("Register");
+        registerButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        registerButton.setSize(100, 20);
+        registerButton.setLocation(150, 250);
+        registerButton.addActionListener(this);
+        container.add(registerButton);
+
+        loginButton = new JButton("Go to Login");
+        loginButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        loginButton.setSize(150, 20);
+        loginButton.setLocation(150, 300);
+        loginButton.addActionListener(e -> {
+            dispose();
+            new LoginForm();
+        });
+        container.add(loginButton);
+
+        resultLabel = new JLabel("");
+        resultLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        resultLabel.setSize(300, 25);
+        resultLabel.setLocation(50, 350);
+        container.add(resultLabel);
+
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+        String email = emailField.getText();
+
+        if (!username.isEmpty() && !password.isEmpty() && !email.isEmpty()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("user_data.txt", true))) {
+                writer.write(username + "," + password + "," + email);
+                writer.newLine();
+                resultLabel.setText("Registration Successful");
+            } catch (IOException ioException) {
+                resultLabel.setText("Error saving data");
+                ioException.printStackTrace();
+            }
+        } else {
+            resultLabel.setText("Please fill in all fields");
+        }
+    }
+
+    public static void main(String[] args) {
+        new Register();
+    }
+}
