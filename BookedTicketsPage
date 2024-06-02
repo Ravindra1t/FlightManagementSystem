@@ -1,0 +1,116 @@
+package FlightManagementSystem;
+
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BookedTicketsPage extends JFrame implements ActionListener {
+    private Container container;
+    private JLabel titleLabel;
+    private JTextArea ticketsTextArea;
+    private JButton homeButton;
+    private JButton cancelButton;
+    private List<String> bookedTickets;
+
+    public BookedTicketsPage() {
+        setTitle("Booked Tickets");
+        setBounds(300, 90, 500, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
+
+        container = getContentPane();
+        container.setLayout(null);
+
+        titleLabel = new JLabel("Booked Tickets");
+        titleLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        titleLabel.setSize(200, 30);
+        titleLabel.setLocation(150, 30);
+        container.add(titleLabel);
+
+        ticketsTextArea = new JTextArea();
+        ticketsTextArea.setFont(new Font("Arial", Font.PLAIN, 15));
+        ticketsTextArea.setSize(400, 200);
+        ticketsTextArea.setLocation(50, 70);
+        ticketsTextArea.setEditable(false);
+        container.add(ticketsTextArea);
+
+        homeButton = new JButton("Go to Home");
+        homeButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        homeButton.setSize(200, 20);
+        homeButton.setLocation(50, 300);
+        homeButton.addActionListener(e -> {
+            dispose();
+            new HomePage();
+        });
+        container.add(homeButton);
+
+        cancelButton = new JButton("Cancel Flight");
+        cancelButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        cancelButton.setSize(200, 20);
+        cancelButton.setLocation(250, 300);
+        cancelButton.addActionListener(this);
+        container.add(cancelButton);
+
+        loadBookedTickets();
+
+        setVisible(true);
+    }
+
+    private void loadBookedTickets() {
+        bookedTickets = new ArrayList<>();
+        StringBuilder ticketsList = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("booked_tickets.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                bookedTickets.add(line);
+                ticketsList.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            ticketsList.append("No tickets booked yet.");
+            e.printStackTrace();
+        }
+        ticketsTextArea.setText(ticketsList.toString());
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String flightToCancel = JOptionPane.showInputDialog(this, "Enter Flight Number to Cancel:");
+        if (flightToCancel != null && !flightToCancel.trim().isEmpty()) {
+            boolean flightFound = false;
+            for (String ticket : bookedTickets) {
+                if (ticket.contains(flightToCancel)) {
+                    flightFound = true;
+                    bookedTickets.remove(ticket);
+                    updateBookedTicketsFile();
+                    JOptionPane.showMessageDialog(this, "Flight Cancelled Successfully!");
+                    loadBookedTickets();
+                    break;
+                }
+            }
+            if (!flightFound) {
+                JOptionPane.showMessageDialog(this, "Invalid Flight Number", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void updateBookedTicketsFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("booked_tickets.txt"))) {
+            for (String ticket : bookedTickets) {
+                writer.write(ticket);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error updating bookings", "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        new BookedTicketsPage();
+    }
+}
